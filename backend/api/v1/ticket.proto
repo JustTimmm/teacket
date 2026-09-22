@@ -1,0 +1,53 @@
+syntax = "proto3";
+package api.v1;
+
+// Different ticket status
+enum Status {
+  TICKET_STATUS_OPEN        = 0;
+  TICKET_STATUS_IN_PROGRESS = 1;
+  TICKET_STATUS_RESOLVED    = 2;
+  TICKET_STATUS_CLOSED      = 3;
+}
+
+// Object Ticket
+message Ticket {
+  int64 id           = 1;
+  string title       = 2;
+  string description = 3;
+  Status status      = 4;
+  string created_at  = 5;
+  string updated_at  = 6;
+}
+
+// Create Ticket
+message CreateTicketRequest {
+  string title       = 1;
+  string description = 2;
+}
+
+message CreateTicketResponse {
+  Ticket ticket = 1;
+}
+
+// Get Ticket
+message GetTicketRequest {
+  int64 id = 1;
+}
+
+message GetTicketResponse {
+  Ticket ticket = 1;
+}
+
+// Delete Ticket
+message DeleteTicketRequest {
+  int64 id = 1;
+}
+
+message DeleteTicketResponse {}
+
+// Service
+service TicketService {
+  rpc CreateTicket(CreateTicketRequest) returns (CreateTicketResponse) {}
+  rpc GetTicket(GetTicketRequest)       returns (GetTicketResponse) {}
+  rpc DeleteTicket(DeleteTicketRequest) returns (DeleteTicketResponse) {}
+}
