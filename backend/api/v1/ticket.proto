@@ -3,15 +3,16 @@ package api.v1;
 
 // Different ticket status
 enum Status {
-  TICKET_STATUS_OPEN        = 0;
-  TICKET_STATUS_IN_PROGRESS = 1;
-  TICKET_STATUS_RESOLVED    = 2;
-  TICKET_STATUS_CLOSED      = 3;
+  STATUS_UNSPECIFIED = 0;
+  STATUS_OPEN        = 1;
+  STATUS_IN_PROGRESS = 2;
+  STATUS_RESOLVED    = 3;
+  STATUS_CLOSED      = 4;
 }
 
 // Object Ticket
 message Ticket {
-  int64 id           = 1;
+  int64  id          = 1;
   string title       = 2;
   string description = 3;
   Status status      = 4;
@@ -48,6 +49,6 @@ message DeleteTicketResponse {}
 // Service
 service TicketService {
   rpc CreateTicket(CreateTicketRequest) returns (CreateTicketResponse) {}
-  rpc GetTicket(GetTicketRequest)       returns (GetTicketResponse) {}
+  rpc GetTicket(GetTicketRequest)       returns (GetTicketResponse)    {}
   rpc DeleteTicket(DeleteTicketRequest) returns (DeleteTicketResponse) {}
 }
