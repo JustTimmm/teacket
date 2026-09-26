@@ -46,9 +46,17 @@ message DeleteTicketRequest {
 
 message DeleteTicketResponse {}
 
+// Get all tickets
+message GetAllTicketRequest {}
+
+message GetAllTicketResponse {
+  repeated Ticket ticket = 1;
+}
+
 // Service
 service TicketService {
-  rpc CreateTicket(CreateTicketRequest) returns (CreateTicketResponse) {}
-  rpc GetTicket(GetTicketRequest)       returns (GetTicketResponse)    {}
-  rpc DeleteTicket(DeleteTicketRequest) returns (DeleteTicketResponse) {}
+  rpc CreateTicket(CreateTicketRequest)  returns (CreateTicketResponse) {}
+  rpc GetTicket(GetTicketRequest)        returns (GetTicketResponse)    {}
+  rpc GetAllTickets(GetAllTicketRequest) returns (GetAllTicketResponse) {}
+  rpc DeleteTicket(DeleteTicketRequest)  returns (DeleteTicketResponse) {}
 }
