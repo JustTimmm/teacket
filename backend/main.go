@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"teacket/database"
 	"teacket/gen/api/v1/apiv1connect"
 	"teacket/handler"
 
@@ -10,6 +11,13 @@ import (
 )
 
 func main() {
+	db, err := database.Connect()
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	fmt.Println("Database connected")
+
 	addr := "localhost:8080"
 	p := new(http.Protocols)
 	p.SetHTTP1(true)
@@ -39,7 +47,7 @@ func main() {
 	}
 
 	fmt.Printf("server started on %s\n", addr)
-	err := s.ListenAndServe()
+	err = s.ListenAndServe()
 
 	if err != nil {
 		panic(fmt.Errorf("impossible to start the server %v\n", err))
