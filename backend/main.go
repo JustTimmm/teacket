@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"teacket/gen/api/v1/apiv1connect"
 	"teacket/handler"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
