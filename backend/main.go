@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"teacket/gen/api/v1/apiv1connect"
+	"teacket/handler"
 )
 
 func main() {
@@ -19,6 +21,14 @@ func main() {
 			panic(fmt.Errorf("impossible to write the response %v\n", err))
 		}
 	})
+
+	path, ticketHandler := apiv1connect.NewTicketServiceHandler(
+		handler.TicketHandler{},
+	)
+
+	fmt.Println(path)
+
+	mux.Handle(path, ticketHandler)
 
 	s := &http.Server{
 		Addr:      addr,
