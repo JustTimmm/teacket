@@ -3,9 +3,13 @@ package handler
 import (
 	"context"
 	v1 "teacket/gen/api/v1"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type TicketHandler struct{}
+type TicketHandler struct {
+	DB *pgxpool.Pool
+}
 
 func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicketRequest) (*v1.CreateTicketResponse, error) {
 	return &v1.CreateTicketResponse{Ticket: &v1.Ticket{

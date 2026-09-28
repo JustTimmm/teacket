@@ -33,7 +33,9 @@ func main() {
 	})
 
 	path, ticketHandler := apiv1connect.NewTicketServiceHandler(
-		handler.TicketHandler{},
+		handler.TicketHandler{
+			DB: db,
+		},
 	)
 
 	fmt.Println(path)
