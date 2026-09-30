@@ -13,7 +13,28 @@ type TicketHandler struct {
 	DB *pgxpool.Pool
 }
 
-func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicketRequest) (*v1.CreateTicketResponse, error) {
+const ticketColumns = `id, title, description, status, created_at, updated_at`
+
+func statusFromDB(s string) v1.Status {
+	switch s {
+	case "open":
+		return v1.Status_STATUS_OPEN
+	case "in_progress":
+		return v1.Status_STATUS_IN_PROGRESS
+	case "resolved":
+		return v1.Status_STATUS_RESOLVED
+	case "closed":
+		return v1.Status_STATUS_CLOSED
+	default:
+		return v1.Status_STATUS_UNSPECIFIED
+	}
+}
+
+type scanner interface {
+	Scan(dest ...any) error
+}
+
+func scanTicket(row scanner) (*v1.Ticket, error) {
 	var (
 		ticket    v1.Ticket
 		status    string
@@ -21,17 +42,7 @@ func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicke
 		updatedAt time.Time
 	)
 
-	err := t.DB.QueryRow(
-		ctx,
-		`
-        INSERT INTO tickets (title, description, status)
-        VALUES ($1, $2, $3)
-        RETURNING id, title, description, status, created_at, updated_at
-        `,
-		request.Title,
-		request.Description,
-		"open",
-	).Scan(
+	err := row.Scan(
 		&ticket.Id,
 		&ticket.Title,
 		&ticket.Description,
@@ -39,79 +50,50 @@ func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicke
 		&createdAt,
 		&updatedAt,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	ticket.Status = statusFromDB(status)
+	ticket.CreatedAt = createdAt.Format(time.RFC3339)
+	ticket.UpdatedAt = updatedAt.Format(time.RFC3339)
+
+	return &ticket, nil
+}
+
+func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicketRequest) (*v1.CreateTicketResponse, error) {
+	ticket, err := scanTicket(t.DB.QueryRow(
+		ctx,
+		`INSERT INTO tickets (title, description, status)
+        VALUES ($1, $2, $3)
+        RETURNING `+ticketColumns,
+		request.Title,
+		request.Description,
+		"open",
+	))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ticket: %w", err)
 	}
 
-	switch status {
-	case "open":
-		ticket.Status = v1.Status_STATUS_OPEN
-	case "in_progress":
-		ticket.Status = v1.Status_STATUS_IN_PROGRESS
-	case "resolved":
-		ticket.Status = v1.Status_STATUS_RESOLVED
-	case "closed":
-		ticket.Status = v1.Status_STATUS_CLOSED
-	default:
-		ticket.Status = v1.Status_STATUS_UNSPECIFIED
-	}
-
-	ticket.CreatedAt = createdAt.Format(time.RFC3339)
-	ticket.UpdatedAt = updatedAt.Format(time.RFC3339)
-
 	return &v1.CreateTicketResponse{
-		Ticket: &ticket,
+		Ticket: ticket,
 	}, nil
 }
 
 func (t TicketHandler) GetTicket(ctx context.Context, request *v1.GetTicketRequest) (*v1.GetTicketResponse, error) {
-	var (
-		ticket    v1.Ticket
-		status    string
-		createdAt time.Time
-		updatedAt time.Time
-	)
-
-	err := t.DB.QueryRow(
+	ticket, err := scanTicket(t.DB.QueryRow(
 		ctx,
-		`
-		SELECT id, title, description, status, created_at, updated_at
-		FROM tickets
-		WHERE id = $1
-		`,
+		`SELECT `+ticketColumns+`FROM tickets WHERE id = $1`,
 		request.Id,
-	).Scan(
-		&ticket.Id,
-		&ticket.Title,
-		&ticket.Description,
-		&status,
-		&createdAt,
-		&updatedAt,
-	)
+	))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ticket: %w", err)
 	}
 
-	switch status {
-	case "open":
-		ticket.Status = v1.Status_STATUS_OPEN
-	case "in_progress":
-		ticket.Status = v1.Status_STATUS_IN_PROGRESS
-	case "resolved":
-		ticket.Status = v1.Status_STATUS_RESOLVED
-	case "closed":
-		ticket.Status = v1.Status_STATUS_CLOSED
-	default:
-		ticket.Status = v1.Status_STATUS_UNSPECIFIED
-	}
-
-	ticket.CreatedAt = createdAt.Format(time.RFC3339)
-	ticket.UpdatedAt = updatedAt.Format(time.RFC3339)
-
 	return &v1.GetTicketResponse{
-		Ticket: &ticket,
+		Ticket: ticket,
 	}, nil
 }
 
@@ -121,19 +103,13 @@ func (t TicketHandler) GetAllTickets(ctx context.Context, request *v1.GetAllTick
 }
 
 func (t TicketHandler) DeleteTicket(ctx context.Context, request *v1.DeleteTicketRequest) (*v1.DeleteTicketResponse, error) {
-	var (
-		ticket v1.Ticket
-	)
+	var id int64
 
 	err := t.DB.QueryRow(
 		ctx,
-		`
-        DELETE FROM tickets 
-        WHERE id = $1
-        RETURNING id
-        `,
+		`DELETE FROM tickets WHERE id = $1 RETURNING id`,
 		request.Id,
-	).Scan(&ticket.Id)
+	).Scan(&id)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete ticket: %w", err)
