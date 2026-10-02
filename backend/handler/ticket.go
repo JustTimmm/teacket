@@ -13,7 +13,7 @@ type TicketHandler struct {
 	DB *pgxpool.Pool
 }
 
-const ticketColumns = `id, title, description, status, created_at, updated_at`
+const ticketColumns = `id, title, content, author_id, status, created_at, updated_at`
 
 func statusFromDB(s string) v1.Status {
 	switch s {
@@ -45,7 +45,8 @@ func scanTicket(row scanner) (*v1.Ticket, error) {
 	err := row.Scan(
 		&ticket.Id,
 		&ticket.Title,
-		&ticket.Description,
+		&ticket.Content,
+		&ticket.AuthorId,
 		&status,
 		&createdAt,
 		&updatedAt,
@@ -64,12 +65,13 @@ func scanTicket(row scanner) (*v1.Ticket, error) {
 func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicketRequest) (*v1.CreateTicketResponse, error) {
 	ticket, err := scanTicket(t.DB.QueryRow(
 		ctx,
-		`INSERT INTO tickets (title, description, status)
-        VALUES ($1, $2, $3)
+		`INSERT INTO tickets (title, content, status, author_id)
+        VALUES ($1, $2, $3, $4)
         RETURNING `+ticketColumns,
 		request.Title,
-		request.Description,
+		request.Content,
 		"open",
+		1,
 	))
 
 	if err != nil {
@@ -116,4 +118,9 @@ func (t TicketHandler) DeleteTicket(ctx context.Context, request *v1.DeleteTicke
 	}
 
 	return &v1.DeleteTicketResponse{}, nil
+}
+
+func (t TicketHandler) UpdateStatus(ctx context.Context, request *v1.UpdateStatusRequest) (*v1.UpdateStatusResponse, error) {
+	//TODO implement me
+	panic("implement me")
 }

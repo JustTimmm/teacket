@@ -41,14 +41,14 @@ message GetTicketRequest {
     int64 id = 1;
 }
 
+message GetTicketResponse {
+    Ticket ticket = 1;
+}
+
 message GetAllTicketsRequest {}
 
 message GetAllTicketsResponse {
     repeated Ticket tickets = 1;
-}
-
-message GetTicketResponse {
-    Ticket ticket = 1;
 }
 
 message UpdateStatusRequest {
