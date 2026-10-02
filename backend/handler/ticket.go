@@ -86,7 +86,7 @@ func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicke
 func (t TicketHandler) GetTicket(ctx context.Context, request *v1.GetTicketRequest) (*v1.GetTicketResponse, error) {
 	ticket, err := scanTicket(t.DB.QueryRow(
 		ctx,
-		`SELECT `+ticketColumns+`FROM tickets WHERE id = $1`,
+		`SELECT `+ticketColumns+` FROM tickets WHERE id = $1`,
 		request.Id,
 	))
 
