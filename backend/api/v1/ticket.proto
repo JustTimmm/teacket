@@ -3,60 +3,66 @@ package api.v1;
 
 // Different ticket status
 enum Status {
-  STATUS_UNSPECIFIED = 0;
-  STATUS_OPEN        = 1;
-  STATUS_IN_PROGRESS = 2;
-  STATUS_RESOLVED    = 3;
-  STATUS_CLOSED      = 4;
+    STATUS_UNSPECIFIED = 0;
+    STATUS_OPEN        = 1;
+    STATUS_IN_PROGRESS = 2;
+    STATUS_RESOLVED    = 3;
+    STATUS_CLOSED      = 4;
 }
 
 // Object Ticket
 message Ticket {
-  int64  id          = 1;
-  string title       = 2;
-  string description = 3;
-  Status status      = 4;
-  string created_at  = 5;
-  string updated_at  = 6;
+    int64 id          = 1;
+    int64 author_id   = 2;
+    string title      = 3;
+    string content    = 4;
+    Status status     = 5;
+    string created_at = 6;
+    string updated_at = 7;
 }
 
 // Create Ticket
 message CreateTicketRequest {
-  string title       = 1;
-  string description = 2;
+    string title   = 1;
+    string content = 2;
 }
 
 message CreateTicketResponse {
-  Ticket ticket = 1;
+    Ticket ticket = 1;
 }
 
-// Get Ticket
-message GetTicketRequest {
-  int64 id = 1;
-}
-
-message GetTicketResponse {
-  Ticket ticket = 1;
-}
-
-// Delete Ticket
 message DeleteTicketRequest {
-  int64 id = 1;
+    int64 id = 1;
 }
 
 message DeleteTicketResponse {}
 
-// Get all tickets
+message GetTicketRequest {
+    int64 id = 1;
+}
+
 message GetAllTicketsRequest {}
 
 message GetAllTicketsResponse {
-  repeated Ticket ticket = 1;
+    repeated Ticket tickets = 1;
 }
 
-// Service
+message GetTicketResponse {
+    Ticket ticket = 1;
+}
+
+message UpdateStatusRequest {
+    Status status = 1;
+}
+
+message UpdateStatusResponse {
+    Ticket ticket = 1;
+}
+
 service TicketService {
-  rpc CreateTicket(CreateTicketRequest)  returns (CreateTicketResponse) {}
-  rpc GetTicket(GetTicketRequest)        returns (GetTicketResponse)    {}
-  rpc GetAllTickets(GetAllTicketsRequest) returns (GetAllTicketsResponse) {}
-  rpc DeleteTicket(DeleteTicketRequest)  returns (DeleteTicketResponse) {}
+    rpc CreateTicket(CreateTicketRequest)   returns (CreateTicketResponse)  {}
+    rpc DeleteTicket(DeleteTicketRequest)   returns (DeleteTicketResponse)  {}
+    rpc GetTicket(GetTicketRequest)         returns (GetTicketResponse)     {}
+    rpc GetAllTickets(GetAllTicketsRequest) returns (GetAllTicketsResponse) {}
+    rpc UpdateStatus(UpdateStatusRequest)   returns (UpdateStatusResponse)  {}
 }
