@@ -30,6 +30,21 @@ func statusFromDB(s string) v1.Status {
 	}
 }
 
+func statusToDB(s v1.Status) (string, error) {
+	switch s {
+	case v1.Status_STATUS_OPEN:
+		return "open", nil
+	case v1.Status_STATUS_IN_PROGRESS:
+		return "in_progress", nil
+	case v1.Status_STATUS_RESOLVED:
+		return "resolved", nil
+	case v1.Status_STATUS_CLOSED:
+		return "closed", nil
+	default:
+		return "", fmt.Errorf("invalid status: %v", s)
+	}
+}
+
 type scanner interface {
 	Scan(dest ...any) error
 }
@@ -121,6 +136,23 @@ func (t TicketHandler) DeleteTicket(ctx context.Context, request *v1.DeleteTicke
 }
 
 func (t TicketHandler) UpdateStatus(ctx context.Context, request *v1.UpdateStatusRequest) (*v1.UpdateStatusResponse, error) {
-	//TODO implement me
-	panic("implement me")
+	status, err := statusToDB(request.Status)
+	if err != nil {
+		return nil, err
+	}
+
+	ticket, err := scanTicket(t.DB.QueryRow(
+		ctx,
+		`UPDATE tickets SET status = $1, updated_at = now() WHERE id = $2 RETURNING `+ticketColumns,
+		status,
+		request.Id,
+	))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update ticket status: %w", err)
+	}
+
+	return &v1.UpdateStatusResponse{
+		Ticket: ticket,
+	}, nil
 }
