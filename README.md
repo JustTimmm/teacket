@@ -8,7 +8,7 @@ L'objectif est de mettre en pratique la conception d'une application web complè
 
 | Technologie    | Utilisation     |
 |----------------|-----------------|
-| **SvelteKit**  | Frontend        |
+| **React**      | Frontend        |
 | **Go**         | Backend         |
 | **ConnectRPC** | API             |
 | **PostgreSQL** | Base de données |
