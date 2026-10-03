@@ -11,7 +11,7 @@ const transport = createConnectTransport({
 })
 const client = createClient(TicketService, transport)
 
-client.getTicket({id: 2}).then(r => {
+client.getTicket({id: BigInt(2)}).then(r => {
     console.log(r.ticket)
 }).catch(err => {
     if (err instanceof ConnectError) {
