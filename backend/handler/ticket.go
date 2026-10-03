@@ -80,9 +80,7 @@ func scanTicket(row scanner) (*v1.Ticket, error) {
 func (t TicketHandler) CreateTicket(ctx context.Context, request *v1.CreateTicketRequest) (*v1.CreateTicketResponse, error) {
 	ticket, err := scanTicket(t.DB.QueryRow(
 		ctx,
-		`INSERT INTO tickets (title, content, status, author_id)
-        VALUES ($1, $2, $3, $4)
-        RETURNING `+ticketColumns,
+		`INSERT INTO tickets (title, content, status, author_id) VALUES ($1, $2, $3, $4) RETURNING `+ticketColumns,
 		request.Title,
 		request.Content,
 		"open",
