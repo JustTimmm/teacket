@@ -1,3 +1,6 @@
 # backend
 backend/.env
 backend/gen
+
+# frontend
+frontend/src/gen

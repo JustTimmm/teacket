@@ -8,6 +8,11 @@ plugins:
     opt:
       - paths=source_relative
       - simple
+  - local: ../frontend/node_modules/.bin/protoc-gen-es
+    out: ../frontend/src/gen
+    include_imports: true
+    opt:
+      - target=ts
 managed:
   enabled: true
   override:
