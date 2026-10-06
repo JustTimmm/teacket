@@ -13,6 +13,7 @@ plugins:
     include_imports: true
     opt:
       - target=ts
+      - ts_nocheck=true
 managed:
   enabled: true
   override:
