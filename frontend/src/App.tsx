@@ -1,45 +1,76 @@
 import './App.css'
-import {useQuery} from "@connectrpc/connect-query";
+import {useMutation, useQuery} from "@connectrpc/connect-query";
 import {TicketService} from "./gen/api/v1/ticket_pb.ts";
 import {useState} from "react";
 
 function App() {
-    const [ticketId, setTicketId] = useState('')
+    // get
+    const [geTicketId, setGetTicketId] = useState('')
+    // create
+    const [createTicketTitle, setCreateTicketTitle] = useState('')
+    const [createTicketContent, setCreateTicketContent] = useState('')
 
-    const {data, isPending, error} = useQuery(
+    const {
+        data     : ticket,
+        isPending: getPending,
+        error    : getError,
+    } = useQuery(
         TicketService.method.getTicket,
-        { id: BigInt(ticketId || 0) },
-        { enabled: ticketId !== '' },
+        { id: BigInt(geTicketId || 0) },
+        { enabled: geTicketId !== '' },
     )
 
+    const {
+        mutate   : createTicket,
+        isPending: createPending,
+        error    : createError,
+    } = useMutation(TicketService.method.createTicket)
+
     return (
-        <div>
-            <input
-                type="number"
-                value={ ticketId }
-                onChange={ (e) => setTicketId(e.target.value) }
-            />
+        <>
+            <div>
+                <h1>Get</h1>
+                <input
+                    type="number"
+                    value={ geTicketId }
+                    onChange={ (e) => setGetTicketId(e.target.value) }
+                />
 
-            { ticketId === '' && <p>Entre un id de ticket</p> }
-            { ticketId !== '' && isPending && <p>Loading</p> }
-            { error && <p>Error: { error.message }</p> }
+                { geTicketId === '' && <p>Entre un id de ticket</p> }
+                { geTicketId !== '' && getPending && <p>Loading</p> }
+                { getError && <p>Error: { getError.message }</p> }
 
-            { data?.ticket && (
-                <div>
-                    <h1>{data.ticket.title}</h1>
-                    <p>Id: {data.ticket.id}</p>
-                    <p>Author Id: {data.ticket.authorId}</p>
-                    <p>Content: {data.ticket.content}</p>
-                    <p>Status: {data.ticket.status}</p>
-                    {data.ticket.createdAt && (
-                        <p>Created At: {data.ticket.createdAt}</p>
-                    )}
-                    {data.ticket.updatedAt && (
-                        <p>Updated At: {data.ticket.updatedAt}</p>
-                    )}
-                </div>
-            )}
-        </div>
+                { ticket?.ticket && (
+                    <div>
+                        <h2>{ticket.ticket.title}</h2>
+                        <p>Id: {ticket.ticket.id}</p>
+                        <p>Author Id: {ticket.ticket.authorId}</p>
+                        <p>Content: {ticket.ticket.content}</p>
+                        <p>Status: {ticket.ticket.status}</p>
+                        {ticket.ticket.createdAt && (
+                            <p>Created At: {ticket.ticket.createdAt}</p>
+                        )}
+                        {ticket.ticket.updatedAt && (
+                            <p>Updated At: {ticket.ticket.updatedAt}</p>
+                        )}
+                    </div>
+                )}
+            </div>
+            <div>
+                <h1>Create</h1>
+
+                { createError && <p>Error: { createError.message }</p> }
+
+                <input value={createTicketTitle} onChange={(e) => setCreateTicketTitle(e.target.value)} />
+                <input value={createTicketContent} onChange={(e) => setCreateTicketContent(e.target.value)} />
+                <button
+                    disabled={createPending}
+                    onClick={() => createTicket({ title: createTicketTitle, content: createTicketContent })}
+                >
+                    Create
+                </button>
+            </div>
+        </>
     )
 }
 
